@@ -1,4 +1,11 @@
-This repository provides installation and configuration Kubernetes cluster (1 master node and 2 worker nodes) in Ubuntu 22.04 using Vagrant VMs or Terraform
+## Fully sefmanaged Kubernetes cluster
+
+This repository provides installation and configuration Kubernetes cluster (1 master node and 2 worker nodes) in Ubuntu 22.04 using Vagrant or Terraform
+
+Kubernetes entities which will deployed:
+- Kubernetes 1.29.6
+- CRI-O (https://cri-o.io/)
+- Flannel (https://github.com/flannel-io/flannel)
 
 ### Vagrant
 
