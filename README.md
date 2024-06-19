@@ -11,53 +11,36 @@ Kubernetes entities which will deployed:
 
 1. Create Vagrant VMs stack
 ```
-vagrant up
+vagrant up && vagrant provision
+...
+kubeadm join 192.168.56.10:6443 --token wtvz68.rzpvd2hfvvgrmsed \
+    vm1:        --discovery-token-ca-cert-hash sha256:46a5902e9da69d0c6506434c94f71477865c8c3c84bac2a1e7b67a109a6397ba
 ```
 
 ### Kubernetes
 
 2. Go to master node and execute
 ```
-sudo kubeadm init --control-plane-endpoint "192.168.56.10:6443" --pod-network-cidr=10.244.0.0/16
-mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
-
-after `sudo kubeadm init ...` you'll get the following output
-```
-  ...
-
-  mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-Alternatively, if you are the root user, you can run:
-
-  export KUBECONFIG=/etc/kubernetes/admin.conf
-
-You should now deploy a pod network to the cluster.
-Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
-  https://kubernetes.io/docs/concepts/cluster-administration/addons/
-
+cat /home/vagrant/kubeadm_join_worker_nodes.sh 
+...
 You can now join any number of control-plane nodes by copying certificate authorities
 and service account keys on each node and then running the following as root:
 
-  kubeadm join 192.168.56.10:6443 --token sgp90z.57v2ibyp511oprje \
-        --discovery-token-ca-cert-hash sha256:72225a60b1924c70354da59e9ec383d5a27f4117c0108220e0b8840a0f264654 \
+  kubeadm join 192.168.56.10:6443 --token rkn3yj.zfqy8b4o6qxc6d68 \
+        --discovery-token-ca-cert-hash sha256:c9dd22c1561c8895279c4be5aaad0f2dff4f854636758503277dd39c15b40864 \
         --control-plane 
 
 Then you can join any number of worker nodes by running the following on each as root:
 
-  kubeadm join 192.168.56.10:6443 --token sgp90z.57v2ibyp511oprje \
-        --discovery-token-ca-cert-hash sha256:72225a60b1924c70354da59e9ec383d5a27f4117c0108220e0b8840a0f264654
+kubeadm join 192.168.56.10:6443 --token rkn3yj.zfqy8b4o6qxc6d68 \
+        --discovery-token-ca-cert-hash sha256:c9dd22c1561c8895279c4be5aaad0f2dff4f854636758503277dd39c15b40864 
 ```
 
 
-3. Go to worker nodes and execute the followin command:
+3. Go to worker nodes and execute the following command:
 ```
-sudo kubeadm join 192.168.56.10:6443 --token sgp90z.57v2ibyp511oprje \
-    --discovery-token-ca-cert-hash sha256:72225a60b1924c70354da59e9ec383d5a27f4117c0108220e0b8840a0f264654
+sudo kubeadm join 192.168.56.10:6443 --token rkn3yj.zfqy8b4o6qxc6d68 \
+  --discovery-token-ca-cert-hash sha256:c9dd22c1561c8895279c4be5aaad0f2dff4f854636758503277dd39c15b40864 
 ```
 
 You will get output

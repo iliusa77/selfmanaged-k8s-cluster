@@ -44,18 +44,13 @@ curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearm
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 apt update && apt -y install kubelet kubeadm kubectl && apt-mark hold kubelet kubeadm kubectl
 
-#master node init
-#sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint "192.168.56.10:6443"
-
-#kubectl config in master node
-# mkdir -p $HOME/.kube
-# sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-# sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-#kubectl config in worker nodes
-# mkdir -p $HOME/.kube
-# vim $HOME/.kube/config 
-# put here content of $HOME/.kube/config from master node
+host_name=$(hostname)
+if [ $host_name = "k8s-master-node" ]; then
+  kubeadm init --pod-network-cidr=10.244.0.0/16 --control-plane-endpoint "192.168.56.10:6443" >>/home/vagrant/kubeadm_join_worker_nodes.sh 2>&1
+  mkdir -p /home/vagrant/.kube
+  sudo cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+  sudo chown -R vagrant:vagrant /home/vagrant
+fi
 
 #in worker nodes need to run
 #sudo kubeadm join 192.168.56.10:6443 --token unmu8e.mwjv1niet1yxfxgb \
