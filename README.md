@@ -244,13 +244,13 @@ provider "aws" {
 
 Comment profile and region variables in `vars.tf`
 ```
-variable "profile" {
-    description = "AWS credentials profile you want to use"
-}
+#variable "profile" {
+#    description = "AWS credentials profile you want to use"
+#}
 
-variable "region" {
-  default = "eu-west-2"
-}
+#variable "region" {
+#  default = "eu-west-2"
+#}
 ```
 
 Define ec2_availability_zones in `vars.tf`
