@@ -1,0 +1,82 @@
+name: Terraform - VPC & EC2 (3 Kubernetes nodes)
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to execute'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+        - plan
+        - apply
+        - destroy
+      aws_access_key_id:
+        description: 'AWS Access Key ID'     
+        required: true
+        default: '' 
+      aws_secret_access_key:
+        description: 'AWS Secret Access Key'     
+        required: true
+        default: '' 
+      aws_region:
+        description: 'AWS region'     
+        required: true
+        default: 'eu-west-2'
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ inputs.aws_access_key_id }}
+  AWS_SECRET_ACCESS_KEY: ${{ inputs.aws_secret_access_key }}
+  AWS_REGION: ${{ inputs.aws_region }} 
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    if:  ${{ inputs.action == 'plan' }} 
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+      - name: Terraform init
+        run: |
+          terraform init
+      - name: Terraform plan
+        id: plan
+        run: |
+            terraform plan -no-color -var "region=${{ inputs.aws_region }}"          
+
+  terraform-apply:
+    runs-on: ubuntu-latest
+    if:  ${{ inputs.action == 'apply' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+      - name: Terraform init
+        run: |
+          terraform init 
+      - name: Terraform apply
+        id: apply
+        run: |
+          terraform apply -no-color -auto-approve -var "region=${{ inputs.aws_region }}" 
+
+
+  terraform-destroy:
+    runs-on: ubuntu-latest
+    if:  ${{ inputs.action == 'destroy' }}
+    steps:
+      - uses: actions/checkout@v4      
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+      - name: Terraform init
+        run: |
+          terraform init 
+      - name: Terraform destroy
+        id: destroy
+        run: | 
+          terraform destroy -no-color -auto-approve -var "region=${{ inputs.aws_region }}" 

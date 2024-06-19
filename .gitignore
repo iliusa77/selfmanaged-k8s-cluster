@@ -1,0 +1,5 @@
+.vagrant*
+.terraform*
+terraform.tfstate
+terraform.tfstate.backup
+ec2-docker-ssh-key*
