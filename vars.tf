@@ -3,12 +3,12 @@ variable "project" {
 }
 
 variable "region" {
-  #default = "eu-west-2"
+  default = "eu-west-2"
 }
 
-# variable "profile" {
-#     description = "AWS credentials profile you want to use"
-# }
+variable "profile" {
+    description = "AWS credentials profile you want to use"
+}
 
 variable "instance_type" {
   default = "t2.medium" #2vCPU #4gb RAM

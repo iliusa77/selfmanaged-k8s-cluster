@@ -179,6 +179,76 @@ resource "aws_security_group_rule" "dns_port" {
   ] 
 }
 
+resource "aws_security_group_rule" "calico_bgp" {
+  security_group_id = "${ module.vpc.default_security_group_id }"
+  type              = "ingress"
+  from_port         = 179
+  to_port           = 179
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Calico networking (BGP)"
+
+  depends_on = [
+    module.vpc
+  ] 
+}
+
+resource "aws_security_group_rule" "calico_vxlan" {
+  security_group_id = "${ module.vpc.default_security_group_id }"
+  type              = "ingress"
+  from_port         = 4789
+  to_port           = 4789
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Calico networking with VXLAN enabled"
+
+  depends_on = [
+    module.vpc
+  ] 
+}
+
+resource "aws_security_group_rule" "calico_typha" {
+  security_group_id = "${ module.vpc.default_security_group_id }"
+  type              = "ingress"
+  from_port         = 5473
+  to_port           = 5473
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Calico networking with Typha enabled"
+
+  depends_on = [
+    module.vpc
+  ] 
+}
+
+resource "aws_security_group_rule" "calico_wireguard_udp" {
+  security_group_id = "${ module.vpc.default_security_group_id }"
+  type              = "ingress"
+  from_port         = 51820
+  to_port           = 51820
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Calico networking with IPv4 Wireguard enabled"
+
+  depends_on = [
+    module.vpc
+  ] 
+}
+
+resource "aws_security_group_rule" "calico_wireguard_udp_ipv6" {
+  security_group_id = "${ module.vpc.default_security_group_id }"
+  type              = "ingress"
+  from_port         = 51821
+  to_port           = 51821
+  protocol          = "udp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Calico networking with IPv6 Wireguard enabled"
+
+  depends_on = [
+    module.vpc
+  ] 
+}
+
 resource "aws_security_group_rule" "outbound" {
   security_group_id = "${ module.vpc.default_security_group_id }"
   type              = "egress"

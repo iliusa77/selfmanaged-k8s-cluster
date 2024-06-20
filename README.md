@@ -6,6 +6,7 @@ Kubernetes entities which will deployed:
 - Kubernetes 1.29.6
 - CRI-O (https://cri-o.io/)
 - Flannel (https://github.com/flannel-io/flannel)
+- Calico (https://www.tigera.io/project-calico/)
 
 ### Vagrant
 
@@ -104,6 +105,25 @@ kube-flannel-ds-n6glw   0/1     Error              14 (5m9s ago)   46m
 
 
 ### Terraform (manual)
+Uncomment the following variables:
+file `providers.tf`
+```
+provider "aws" {
+  #profile    = "${var.profile}"
+  region     = "${var.region}"    
+}
+```
+file `vars.tf`
+```
+#variable "region" {
+#  default = "eu-west-2"
+#}
+
+#variable "profile" {
+#    description = "AWS credentials profile you want to use"
+#}
+```
+
 Generate SSH keys pair
 ```
 ssh-keygen -t rsa -b 4096 -f ./ec2-docker-ssh-key
@@ -111,7 +131,7 @@ chmod 400 ec2-docker-ssh-key
 ```
 
 
-Create infra
+Create infrastructure for cluster
 ```
 terraform init
 
@@ -126,7 +146,10 @@ var.profile
   AWS credentials profile you want to use
 
   Enter a value: default
+```
 
+Terraform output:
+```
 instance_1_private_ip = ""
 instance_1_public_ip = ""
 instance_2_private_ip = ""
@@ -141,7 +164,12 @@ Configure Kubernetes
 ssh ubuntu@<instance_1_public_ip> -i ec2-docker-ssh-key
 sudo hostnamectl set-hostname k8s-master-node
 
+#in case Flannel using
 sudo kubeadm init --control-plane-endpoint "<instance_1_private_ip>:6443" --pod-network-cidr=10.244.0.0/16
+
+#in case Calico using
+sudo kubeadm init --control-plane-endpoint "<instance_1_private_ip>:6443" --pod-network-cidr=192.168.0.0/16
+
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -182,7 +210,7 @@ mkdir -p $HOME/.kube
 vim $HOME/.kube/config
 ```
 
-Flannel in AWS (EC2)
+Flannel
 ```
 # master node
 kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml
@@ -194,11 +222,31 @@ kube-flannel-ds-tgpsn   1/1     Running   0          13s
 kube-flannel-ds-xbhtg   1/1     Running   0          13s
 ```
 
-Test deploy in AWS (EC2)
+Calico
+```
+# master node
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/custom-resources.yaml
+
+kubectl get pods -n calico-system
+NAME                                       READY   STATUS    RESTARTS   AGE
+calico-kube-controllers-77544fb48f-l7whg   1/1     Running   0          39m
+calico-node-fc5kw                          1/1     Running   0          24m
+calico-node-qq2sf                          1/1     Running   0          19m
+calico-node-rbvbv                          1/1     Running   0          24m
+calico-typha-85c58fccd9-5svmc              1/1     Running   0          39m
+calico-typha-85c58fccd9-snlsl              1/1     Running   0          39m
+csi-node-driver-5dxw4                      2/2     Running   0          39m
+csi-node-driver-l87vk                      2/2     Running   0          39m
+csi-node-driver-ws2dn                      2/2     Running   0          39m
+```
+
+Test deploy
 ```
 # worker node
 kubectl apply -f nginx_deployment.yaml
 
+# checking Flannel
 kubectl get deploy,po -o wide
 NAME                               READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS   IMAGES         SELECTOR
 deployment.apps/nginx-deployment   2/2     2            2           95s   nginx        nginx:1.16.1   app=nginx
@@ -206,7 +254,15 @@ deployment.apps/nginx-deployment   2/2     2            2           95s   nginx 
 NAME                                    READY   STATUS    RESTARTS   AGE   IP           NODE                NOMINATED NODE   READINESS GATES
 pod/nginx-deployment-848dd6cfb5-c2pch   1/1     Running   0          95s   10.244.2.2   k8s-worker-node-2       <none>           <none>
 pod/nginx-deployment-848dd6cfb5-vdmx5   1/1     Running   0          95s   10.244.1.2   k8s-worker-node-1       <none>           <none>
-ubuntu@k8s-worker-node-1:~$ 
+
+# checking Calico
+kubectl get deploy,po -o wide
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE    CONTAINERS   IMAGES         SELECTOR
+deployment.apps/nginx-deployment   2/2     2            2           116s   nginx        nginx:1.16.1   app=nginx
+
+NAME                                    READY   STATUS    RESTARTS   AGE    IP               NODE           NOMINATED NODE   READINESS GATES
+pod/nginx-deployment-848dd6cfb5-5sgsr   1/1     Running   0          116s   192.168.157.2    ip-10-0-4-61   <none>           <none>
+pod/nginx-deployment-848dd6cfb5-kmkqv   1/1     Running   0          116s   192.168.223.66   ip-10-0-4-90   <none>           <none>
 ```
 
 Terraform destroy (infra cleanup)
