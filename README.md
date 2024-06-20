@@ -7,6 +7,7 @@ Kubernetes entities which will deployed:
 - CRI-O (https://cri-o.io/)
 - Flannel (https://github.com/flannel-io/flannel)
 - Calico (https://www.tigera.io/project-calico/)
+- Cilium (https://docs.cilium.io/en/stable/overview/intro/)
 
 ### Vagrant
 
@@ -170,6 +171,9 @@ sudo kubeadm init --control-plane-endpoint "<instance_1_private_ip>:6443" --pod-
 #in case Calico using
 sudo kubeadm init --control-plane-endpoint "<instance_1_private_ip>:6443" --pod-network-cidr=192.168.0.0/16
 
+#in case Cilium using (--pod-network-cidr doesn't matter)
+sudo kubeadm init --control-plane-endpoint "<instance_1_private_ip>:6443" --pod-network-cidr=10.0.0.0/8
+
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
@@ -241,6 +245,30 @@ csi-node-driver-l87vk                      2/2     Running   0          39m
 csi-node-driver-ws2dn                      2/2     Running   0          39m
 ```
 
+Cilium
+wget https://github.com/cilium/cilium-cli/releases/download/v0.15.0/cilium-linux-amd64.tar.gz
+tar -xvf cilium-linux-amd64.tar.gz
+sudo mv ./cilium /usr/local/bin
+cilium install --version 1.15.6
+
+#check cilium status
+cilium status
+    /¯¯\
+ /¯¯\__/¯¯\    Cilium:             OK
+ \__/¯¯\__/    Operator:           OK
+ /¯¯\__/¯¯\    Envoy DaemonSet:    disabled (using embedded mode)
+ \__/¯¯\__/    Hubble Relay:       disabled
+    \__/       ClusterMesh:        disabled
+
+Deployment             cilium-operator    Desired: 1, Ready: 1/1, Available: 1/1
+DaemonSet              cilium             Desired: 3, Ready: 3/3, Available: 3/3
+Containers:            cilium             Running: 3
+                       cilium-operator    Running: 1
+Cluster Pods:          2/10 managed by Cilium
+Helm chart version:    1.15.6
+Image versions         cilium-operator    quay.io/cilium/operator-generic:v1.15.6@sha256:5789f0935eef96ad571e4f5565a8800d3a8fbb05265cf6909300cd82fd513c3d: 1
+                       cilium             quay.io/cilium/cilium:v1.15.6@sha256:6aa840986a3a9722cd967ef63248d675a87add7e1704740902d5d3162f0c0def: 3
+
 Test deploy
 ```
 # worker node
@@ -263,6 +291,14 @@ deployment.apps/nginx-deployment   2/2     2            2           116s   nginx
 NAME                                    READY   STATUS    RESTARTS   AGE    IP               NODE           NOMINATED NODE   READINESS GATES
 pod/nginx-deployment-848dd6cfb5-5sgsr   1/1     Running   0          116s   192.168.157.2    ip-10-0-4-61   <none>           <none>
 pod/nginx-deployment-848dd6cfb5-kmkqv   1/1     Running   0          116s   192.168.223.66   ip-10-0-4-90   <none>           <none>
+```
+
+checking Cilium
+```
+kubectl get po -o wide
+NAME                                READY   STATUS    RESTARTS   AGE   IP           NODE            NOMINATED NODE   READINESS GATES
+nginx-deployment-848dd6cfb5-6fjfc   1/1     Running   0          26s   10.0.2.202   ip-10-0-4-128   <none>           <none>
+nginx-deployment-848dd6cfb5-b4ttf   1/1     Running   0          26s   10.0.1.128   ip-10-0-4-93    <none>           <none>
 ```
 
 Terraform destroy (infra cleanup)
