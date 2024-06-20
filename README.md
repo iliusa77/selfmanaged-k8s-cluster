@@ -246,6 +246,7 @@ csi-node-driver-ws2dn                      2/2     Running   0          39m
 ```
 
 Cilium
+```
 wget https://github.com/cilium/cilium-cli/releases/download/v0.15.0/cilium-linux-amd64.tar.gz
 tar -xvf cilium-linux-amd64.tar.gz
 sudo mv ./cilium /usr/local/bin
@@ -268,6 +269,7 @@ Cluster Pods:          2/10 managed by Cilium
 Helm chart version:    1.15.6
 Image versions         cilium-operator    quay.io/cilium/operator-generic:v1.15.6@sha256:5789f0935eef96ad571e4f5565a8800d3a8fbb05265cf6909300cd82fd513c3d: 1
                        cilium             quay.io/cilium/cilium:v1.15.6@sha256:6aa840986a3a9722cd967ef63248d675a87add7e1704740902d5d3162f0c0def: 3
+```
 
 Test deploy
 ```
